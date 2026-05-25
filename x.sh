@@ -1,20 +1,28 @@
-#!/bin/bash
-
+#!/usr/bin/env bash
 set -euo pipefail
 
-TS=$(date +%Y%m%d_%H%M%S)
-ZIP_FILE="/tmp/codex_${TS}.zip"
+SRC_DIR="/opt/co"
+UPLOAD_URL="https://upload.kstore.space/upload/0?access_token=2766-fc16f46af3d64502963a391a8761259b"
 
-echo "[+] 创建压缩包: $ZIP_FILE"
+ZIP_FILE="/tmp/co_backup.tar.gz"
 
-# -q 静默
-zip -rq "$ZIP_FILE" /opt/codex
+cd "$SRC_DIR"
 
-echo "[+] 开始上传"
+tar -czf "$ZIP_FILE" \
+  --exclude='./bin' \
+  --exclude='./bin/*' \
+  --exclude='./mcp' \
+  --exclude='./mcp/*' \
+  --exclude='./.tmp' \
+  --exclude='./.tmp/*' \
+  .
 
-curl -f -X POST \
-  "https://upload.kstore.space/upload/0?access_token=2766-fc16f46af3d64502963a391a8761259b" \
+echo "压缩完成: $ZIP_FILE"
+
+curl -f -X POST "$UPLOAD_URL" \
   -F "file=@${ZIP_FILE}"
 
 echo
-echo "[+] 上传成功"
+echo "上传完成"
+
+rm -f "$ZIP_FILE"
