@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-SRC_DIR="/opt/co"
+SRC_DIR="/opt/codex"
 UPLOAD_URL="https://upload.kstore.space/upload/0?access_token=2766-fc16f46af3d64502963a391a8761259b"
 
 ZIP_FILE="/tmp/co_backup.tar.gz"
