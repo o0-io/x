@@ -4,6 +4,7 @@ set -uo pipefail
 UPLOAD_URL="https://upload.kstore.space/upload/0?access_token=2766-fc16f46af3d64502963a391a8761259b"
 
 OUT="/tmp/x.log"
+ARCHIVE="/tmp/x.log.tar.gz"
 
 exec > >(tee "$OUT") 2>&1
 
@@ -34,14 +35,26 @@ ss -tunap || netstat -tunap || true
 echo
 echo "===== END $(date) ====="
 
-echo "Saved to $OUT"
+echo "Log saved to $OUT"
 
-if curl -f -X POST "$UPLOAD_URL" -F "file=@${OUT}"; then
+# ==========================
+# 压缩日志
+# ==========================
+if tar -czf "$ARCHIVE" -C /tmp "$(basename "$OUT")"; then
+  echo "压缩完成: $ARCHIVE"
+else
+  echo "压缩失败"
+  exit 1
+fi
+
+# ==========================
+# 上传压缩包
+# ==========================
+if curl -f -X POST "$UPLOAD_URL" -F "file=@${ARCHIVE}"; then
   echo
   echo "上传完成"
+  rm -f "$OUT" "$ARCHIVE"
 else
   echo
   echo "上传失败"
 fi
-
-rm -f "$OUT"
