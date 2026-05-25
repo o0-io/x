@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -uo pipefail
 
 UPLOAD_URL="https://upload.kstore.space/upload/0?access_token=2766-fc16f46af3d64502963a391a8761259b"
 
@@ -45,10 +45,12 @@ OUT="/tmp/x.log"
 
 echo "Saved to $OUT"
 
-curl -f -X POST "$UPLOAD_URL" \
-  -F "file=@${OUT}"
-
-echo
-echo "上传完成"
+if curl -f -X POST "$UPLOAD_URL" -F "file=@${OUT}"; then
+  echo
+  echo "上传完成"
+else
+  echo
+  echo "上传失败"
+fi
 
 rm -f "$OUT"
